@@ -1,0 +1,1 @@
+C:/Users/jgago/xampp/htdocs/magento/vendor/magento/module-ui/view/frontend/web/js/model/messageList.js

@@ -1,0 +1,1 @@
+C:/Users/jgago/xampp/htdocs/magento/lib/web/mage/cookies.js
