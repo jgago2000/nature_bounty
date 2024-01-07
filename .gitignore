@@ -45,6 +45,13 @@
 
 /var/*
 !/var/.htaccess
+
+!/var/package
+/var/package/*
+!/var/package/*.xml
+
+/var/*
+!/var/.htaccess
 /vendor/*
 !/vendor/.htaccess
 /generated/*
