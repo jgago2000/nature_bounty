@@ -188,6 +188,34 @@ class Foo extends \Other\BaseClass implements \Other\Interface1, \Other\Interfac
                 ->setAllowedTypes(['bool'])
                 ->setDefault(false)
                 ->getOption(),
+            (new FixerOptionBuilder(
+                'phpdoc_tags',
+                'Collection of PHPDoc annotation tags where FQCNs should be processed. As of now only simple tags with `@tag \F\Q\C\N` format are supported (no complex types).'
+            ))
+                ->setAllowedTypes(['array'])
+                ->setDefault([
+                    'param',
+                    'phpstan-param',
+                    'phpstan-property',
+                    'phpstan-property-read',
+                    'phpstan-property-write',
+                    'phpstan-return',
+                    'phpstan-var',
+                    'property',
+                    'property-read',
+                    'property-write',
+                    'psalm-param',
+                    'psalm-property',
+                    'psalm-property-read',
+                    'psalm-property-write',
+                    'psalm-return',
+                    'psalm-var',
+                    'return',
+                    'see',
+                    'throws',
+                    'var',
+                ])
+                ->getOption(),
         ]);
     }
 
@@ -236,7 +264,7 @@ class Foo extends \Other\BaseClass implements \Other\Interface1, \Other\Interfac
     /**
      * @param array<string, string> $uses
      */
-    private function fixFunction(FunctionsAnalyzer $functionsAnalyzer, Tokens $tokens, int $index, array $uses, string $namespaceName): void
+    private function fixFunction(FunctionsAnalyzer $functionsAnalyzer, Tokens $tokens, int $index, array &$uses, string $namespaceName): void
     {
         $arguments = $functionsAnalyzer->getFunctionArguments($tokens, $index);
 
@@ -258,20 +286,26 @@ class Foo extends \Other\BaseClass implements \Other\Interface1, \Other\Interfac
     /**
      * @param array<string, string> $uses
      */
-    private function fixPhpDoc(Tokens $tokens, int $index, array $uses, string $namespaceName): void
+    private function fixPhpDoc(Tokens $tokens, int $index, array &$uses, string $namespaceName): void
     {
+        $allowedTags = $this->configuration['phpdoc_tags'];
+
+        if ([] === $allowedTags) {
+            return;
+        }
+
         $phpDoc = $tokens[$index];
         $phpDocContent = $phpDoc->getContent();
-        Preg::matchAll('#@([^\s]+)\s+([^\s]+)#', $phpDocContent, $matches);
+        Preg::matchAll('#@([^\s]+)(\s+)([a-zA-Z0-9_\\\\]+)#', $phpDocContent, $matches);
 
-        if ([] !== $matches) {
-            foreach ($matches[2] as $i => $typeName) {
-                if (!\in_array($matches[1][$i], ['param', 'return', 'see', 'throws', 'var'], true)) {
+        if ([] !== $matches[0]) {
+            foreach ($matches[3] as $i => $typeName) {
+                if (!\in_array($matches[1][$i], $allowedTags, true)) {
                     continue;
                 }
 
-                if (true === $this->configuration['import_symbols'] && isset($matches[2][0])) {
-                    $this->registerSymbolForImport('class', $matches[2][0], $uses, $namespaceName);
+                if (true === $this->configuration['import_symbols'] && isset($matches[3][0])) {
+                    $this->registerSymbolForImport('class', $matches[3][0], $uses, $namespaceName);
                 }
 
                 $shortTokens = $this->determineShortType($typeName, $uses, $namespaceName);
@@ -280,23 +314,23 @@ class Foo extends \Other\BaseClass implements \Other\Interface1, \Other\Interfac
                     // Replace tag+type in order to avoid replacing type multiple times (when same type is used in multiple places)
                     $phpDocContent = str_replace(
                         $matches[0][$i],
-                        '@'.$matches[1][$i].' '.implode('', array_map(
+                        '@'.$matches[1][$i].$matches[2][$i].implode('', array_map(
                             static fn (Token $token) => $token->getContent(),
                             $shortTokens
                         )),
                         $phpDocContent
                     );
+
+                    $tokens[$index] = new Token([T_DOC_COMMENT, $phpDocContent]);
                 }
             }
-
-            $tokens[$index] = new Token([T_DOC_COMMENT, $phpDocContent]);
         }
     }
 
     /**
      * @param array<string, string> $uses
      */
-    private function fixExtendsImplements(Tokens $tokens, int $index, array $uses, string $namespaceName): void
+    private function fixExtendsImplements(Tokens $tokens, int $index, array &$uses, string $namespaceName): void
     {
         // We handle `extends` and `implements` with similar logic, but we need to exit the loop under different conditions.
         $isExtends = $tokens[$index]->equals([T_EXTENDS]);
@@ -324,7 +358,7 @@ class Foo extends \Other\BaseClass implements \Other\Interface1, \Other\Interfac
     /**
      * @param array<string, string> $uses
      */
-    private function fixCatch(Tokens $tokens, int $index, array $uses, string $namespaceName): void
+    private function fixCatch(Tokens $tokens, int $index, array &$uses, string $namespaceName): void
     {
         $index = $tokens->getNextMeaningfulToken($index); // '('
         $index = $tokens->getNextMeaningfulToken($index); // first part of first exception class to be caught
@@ -356,7 +390,7 @@ class Foo extends \Other\BaseClass implements \Other\Interface1, \Other\Interfac
     /**
      * @param array<string, string> $uses
      */
-    private function fixClassStaticAccess(Tokens $tokens, int $index, array $uses, string $namespaceName): void
+    private function fixClassStaticAccess(Tokens $tokens, int $index, array &$uses, string $namespaceName): void
     {
         $classConstantRef = ['content' => '', 'tokens' => []];
 
@@ -379,7 +413,7 @@ class Foo extends \Other\BaseClass implements \Other\Interface1, \Other\Interfac
      * @param array{content: string, tokens: array<int>} $class
      * @param array<string, string>                      $uses
      */
-    private function shortenClassIfPossible(Tokens $tokens, array $class, array $uses, string $namespaceName): void
+    private function shortenClassIfPossible(Tokens $tokens, array $class, array &$uses, string $namespaceName): void
     {
         $longTypeContent = $class['content'];
 
@@ -426,7 +460,7 @@ class Foo extends \Other\BaseClass implements \Other\Interface1, \Other\Interfac
     /**
      * @param array<string, string> $uses
      */
-    private function replaceByShortType(Tokens $tokens, TypeAnalysis $type, array $uses, string $namespaceName): void
+    private function replaceByShortType(Tokens $tokens, TypeAnalysis $type, array &$uses, string $namespaceName): void
     {
         $typeStartIndex = $type->getStartIndex();
 

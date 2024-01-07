@@ -82,7 +82,7 @@ return [
         'Magento_Bundle' => 1,
         'Magento_CatalogCustomerGraphQl' => 1,
         'Magento_Elasticsearch' => 1,
-        'Magento_Elasticsearch8' => 1,
+        'Magento_Elasticsearch7' => 1,
         'Magento_Email' => 1,
         'Magento_EncryptionKey' => 1,
         'Magento_Fedex' => 1,
@@ -327,6 +327,9 @@ return [
         'Magento_Wishlist' => 1,
         'Magento_WishlistAnalytics' => 1,
         'Magento_WishlistGraphQl' => 1,
+        'DNAFactory_Scss' => 0,
+        'DNAFactory_Critical' => 0,
+        'DNAFactory_Bootstrap' => 1,
         'PayPal_Braintree' => 1,
         'PayPal_BraintreeGraphQl' => 1,
         'Temando_ShippingRemover' => 1

@@ -1,4 +1,4 @@
-a:4:{s:4:"hash";s:0:"";s:5:"mtime";i:1703706207;s:6:"expire";i:1735242207;s:4:"tags";s:37:"6f3_LAYOUT_GENERAL_CACHE_TAG,6f3_MAGE";}
+a:4:{s:4:"hash";s:0:"";s:5:"mtime";i:1704149174;s:6:"expire";i:1735685174;s:4:"tags";s:37:"6f3_LAYOUT_GENERAL_CACHE_TAG,6f3_MAGE";}
 <?xml version="1.0"?>
 <layouts xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><handle id="catalog_category_view"><body/>
 </handle><handle id="catalogsearch_advanced_index"><body/>
@@ -6919,6 +6919,21 @@ a:4:{s:4:"hash";s:0:"";s:5:"mtime";i:1703706207;s:6:"expire";i:1735242207;s:4:"t
    <referenceContainer name="content">
       <block class="Magento\Wishlist\Block\Share\Wishlist" name="customer.wishlist" template="Magento_Wishlist::shared.phtml" cacheable="false"/>
    </referenceContainer>
+</body>
+</handle><handle id="css_critical_path_fallback"><head>
+   <css src="DNAFactory_Bootstrap::css/critical.css"/>
+</head>
+</handle><handle id="default_head_blocks"><head>
+   <css src="DNAFactory_Bootstrap::css/bootstrap.css"/>
+</head>
+<body>
+   <referenceBlock name="head.additional">
+      <block name="critical_bootstrap_css_block" before="critical_css_block" template="Magento_Theme::html/header/criticalCss.phtml" ifconfig="dev/css/use_css_critical_path">
+         <arguments>
+            <argument name="criticalCssViewModel" xsi:type="object">CriticalCssBootstrap</argument>
+         </arguments>
+      </block>
+   </referenceBlock>
 </body>
 </handle><handle id="braintree_googlepay_review" layout="1column"><head>
    <title>Review Order</title>
