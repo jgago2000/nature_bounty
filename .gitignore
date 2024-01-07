@@ -36,16 +36,6 @@
 /media/xmlconnect/system/*
 !/media/xmlconnect/system/ok.gif
 
-/var/*
-!/var/.htaccess
-
-!/var/package
-/var/package/*
-!/var/package/*.xml
-
-/var/*
-!/var/.htaccess
-
 !/var/package
 /var/package/*
 !/var/package/*.xml
@@ -56,3 +46,5 @@
 !/vendor/.htaccess
 /generated/*
 !/generated/.htaccess
+
+*.log
