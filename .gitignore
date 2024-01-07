@@ -36,6 +36,10 @@
 /media/xmlconnect/system/*
 !/media/xmlconnect/system/ok.gif
 
+#--------------------------#
+# Magento Other Files      #
+#--------------------------#
+
 !/var/package
 /var/package/*
 !/var/package/*.xml
