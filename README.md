@@ -7,8 +7,10 @@
 ## Clone this repository
 git clone git@github.com:jgago2000/nature_bounty.git
 
-## Database SQL Script
+## Database Name
 database name = shop
+
+## Database SQL Script
 scriptdb/20240107212523.sql
 
 
